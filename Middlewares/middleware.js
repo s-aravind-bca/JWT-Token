@@ -4,7 +4,7 @@ import userModel from '../Model/userModel.js';
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        res.status(401).json({ "message": "missing token" })
+       return res.status(401).json({ "message": "missing token" })
     }
 
     const token = authHeader.split(" ")[1];

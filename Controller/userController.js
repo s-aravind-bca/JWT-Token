@@ -1,7 +1,10 @@
 import model from '../Model/userModel.js'
+import mail from '../Model/mailModel.js'
 import bcrypt from 'bcryptjs'
 import utils from '../utils/utils.js'
 import nodemailer from 'nodemailer'
+import jsonwebtoken from 'jsonwebtoken'
+
 async function createUser(req, res) {
     try {
         const { email, password } = req.body
@@ -47,7 +50,7 @@ async function authenticate(req, res) {
 
 async function allUser(req, res) {
     try {
-        const result = await model.find()
+        const result = await model.findById(req.user.id)
         return res.json({ "data": [`hello ${req.user.email}`, result] })
     }
     catch (err) {
@@ -132,11 +135,70 @@ async function resetPasswordConfirm(req, res) {
     }
 }
 
+const verifyToken = async(req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+       return res.status(401).json({ "message": "missing token" })
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    jsonwebtoken.verify(token, process.env.SECRET_KEY,async (err,decode)=>{
+        if(err){
+            return res.status(403).json({"message":"Invalid Token"})
+        }
+        console.log("decoded :",decode);
+        const user = await model.findById(decode.id)
+
+        if(!user){
+           return res.status(404).json({"message":"user not found"})
+        }
+
+        return res.status(200).json({"message":"Token is valid"})
+    })
+}
+
+async function sendMail(req,res) {
+    try {
+        const { content } = req.body
+        
+         const result = await mail.create({ "email":content })
+         const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASSWORD
+            }
+        })
+        const message = {
+            from: process.env.MAIL_USER,
+            to: "anandhanb863@gmail.com",
+            subject: "Password reset request",
+            html: content
+        }
+        transporter.sendMail(message, (err, info) => {
+            if (err) {
+                return res.status(400).send("Somthing went wrong, try again")
+            }
+            return res.ststus(200).json({ "success": "mail sent" })
+
+        })
+           
+        
+    }
+    catch (err) {
+        res.status(500).send('Internal Server Error')
+        console.error(err.message)
+    }
+}
+
 
 export default {
     createUser,
     authenticate,
     resetPassword,
     allUser,
-    resetPasswordConfirm
+    resetPasswordConfirm,
+    verifyToken,
+    sendMail
 }
