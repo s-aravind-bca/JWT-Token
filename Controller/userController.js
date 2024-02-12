@@ -1,10 +1,16 @@
 import model from '../Model/userModel.js'
 import mail from '../Model/mailModel.js'
+import gpt from '../Model/gptModel.js'
 import bcrypt from 'bcryptjs'
 import utils from '../utils/utils.js'
 import nodemailer from 'nodemailer'
 import jsonwebtoken from 'jsonwebtoken'
+import OpenAI from 'openai';
 
+console.log(process.env.OPENAI_KEY2);
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_KEY2
+});
 async function createUser(req, res) {
     try {
         const { email, password } = req.body
@@ -48,7 +54,7 @@ async function authenticate(req, res) {
     }
 }
 
-async function allUser(req, res) {
+async function tokenUser(req, res) {
     try {
         const result = await model.findById(req.user.id)
         return res.json({ "data": [`hello ${req.user.email}`, result] })
@@ -160,9 +166,9 @@ const verifyToken = async(req, res) => {
 
 async function sendMail(req,res) {
     try {
-        const { content } = req.body
+        const { email,content } = req.body
         
-         const result = await mail.create({ "email":content })
+         const result = await mail.create({ "email":content,"to":email })
          const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -172,8 +178,8 @@ async function sendMail(req,res) {
         })
         const message = {
             from: process.env.MAIL_USER,
-            to: "anandhanb863@gmail.com",
-            subject: "Password reset request",
+            to: email,
+            subject: "Sample Mail",
             html: content
         }
         transporter.sendMail(message, (err, info) => {
@@ -187,18 +193,40 @@ async function sendMail(req,res) {
         
     }
     catch (err) {
-        res.status(500).send('Internal Server Error')
         console.error(err.message)
+       return res.status(500).send('Internal Server Error')
+        
     }
 }
 
+async function chatgpt(req,res){
+    try{
+
+    const {prompt} = req.body;
+    const result = await openai.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'gpt-3.5-turbo',
+    })
+    const resultString = JSON.stringify(result)
+    const message = result.choices[0].message.content
+    await gpt.create({prompt,"result":resultString,message})
+    
+    return res.send(message)
+}
+catch(err){
+    console.error(err.message)
+    return res.status(500).send('Internal Server Error')
+   
+}
+}
 
 export default {
     createUser,
     authenticate,
     resetPassword,
-    allUser,
+    tokenUser,
     resetPasswordConfirm,
     verifyToken,
-    sendMail
+    sendMail,
+    chatgpt
 }

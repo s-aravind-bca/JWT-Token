@@ -9,5 +9,6 @@ route.post('/verify-token',(req,res)=>controller.verifyToken(req,res))// To veri
 route.post('/reset-password',(req,res)=>controller.resetPassword(req,res)) 
 route.post('/reset-password/:token',(req,res)=>controller.resetPasswordConfirm(req,res))
 route.post('/mail',(req,res)=>controller.sendMail(req,res))
-route.get('/secret',middleware.verifyToken,(req,res)=>controller.allUser(req,res))
+route.get('/secret',middleware.verifyToken,(req,res)=>controller.tokenUser(req,res))
+route.post('/chat',(req,res)=>controller.chatgpt(req,res))
 export default route 
