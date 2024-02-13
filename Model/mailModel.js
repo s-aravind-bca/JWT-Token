@@ -8,6 +8,9 @@ const mailSchema = new mongoose.Schema({
     to:{
         type:String,
         required:true
+    },
+    sent:{
+        type: Boolean
     }
 },{
     timestamps:true
