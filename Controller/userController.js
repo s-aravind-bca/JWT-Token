@@ -203,13 +203,23 @@ async function chatgpt(req, res) {
   try {
     const { prompt } = req.body;
     if(!prompt) return res.status(404).send("No prompt given")
+
+      const query = `Answer the question based on the context below or if no context, then answer based on the question.
+      The response should be in HTML format.
+      The response should preserve any HTML formatting, links, and styles in the context or Add yourself required formatting.
+      
+      Context: ${prompt.context}
+      
+      Question: ${prompt.query}
+      `
+     // console.log("Query = ",query);
     const result = await openai.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: query }],
       model: "gpt-3.5-turbo",
     });
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
-    await gpt.create({ prompt, result: resultString, message });
+    await gpt.create({ "prompt":query, result: resultString, message });
 
     return res.send(message);
   } catch (err) {

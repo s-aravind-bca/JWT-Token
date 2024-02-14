@@ -1,0 +1,46 @@
+[
+  {
+    "thread": [],
+    "prompt": "Answer the question based on the context below.\nThe response should be in HTML format.\nThe response should preserve any HTML formatting, links, and styles in the context.\n\nContext:\"\"\n\nQuestion: \"\"\"hi\"\"\"\n\nAnswer:",
+    "query": "hi",
+    "context": "",
+    "system": [
+      "Answer the question based on the context below.",
+      "The response should be in HTML format.",
+      "The response should preserve any HTML formatting, links, and styles in the context."
+    ]
+  },
+  {
+    "data": "can I help you?",
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-length": "15",
+      "content-type": "text/html; charset=utf-8"
+    },
+    "config": {
+      "transitional": {
+        "silentJSONParsing": true,
+        "forcedJSONParsing": true,
+        "clarifyTimeoutError": false
+      },
+      "adapter": ["xhr", "http"],
+      "transformRequest": [null],
+      "transformResponse": [null],
+      "timeout": 0,
+      "xsrfCookieName": "XSRF-TOKEN",
+      "xsrfHeaderName": "X-XSRF-TOKEN",
+      "maxContentLength": -1,
+      "maxBodyLength": -1,
+      "env": {},
+      "headers": {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json"
+      },
+      "method": "post",
+      "url": "http://localhost:7000/api/v1/user/chat",
+      "data": "{\"prompt\":\"how\"}"
+    },
+    "request": {}
+  }
+]
