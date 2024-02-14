@@ -160,6 +160,7 @@ async function sendMail(req, res) {
     const { email, content } = req.body;
 
     if (email && content) {
+      
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
