@@ -2,9 +2,7 @@ import model from "../Model/userModel.js";
 import mail from "../Model/mailModel.js";
 import gpt from "../Model/gptModel.js";
 import bcrypt from "bcryptjs";
-import utils from "../utils/utils.js";
 import nodemailer from "nodemailer";
-import jsonwebtoken from "jsonwebtoken";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -15,49 +13,21 @@ async function createUser(req, res) {
     const { email, password } = req.body;
     const user = await model.findOne({ email });
     if (user) {
-      res.status(400).send("email already exist");
+      return res.status(400).send("email already exist");
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await model.create({ email, password: hashedPassword });
-      res.json({ success: "user created" });
+      return res.send("user created" );
     }
   } catch (err) {
-    res.status(500).send("Internal Server Error");
     console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+   
   }
 }
 
-async function authenticate(req, res) {
-  try {
-    const { email, password } = req.body;
-    const user = await model.findOne({ email });
-    if (user) {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Incorrect Password" });
-      }
 
-      const token = utils.generateToken(user);
-      console.log(token);
-      res.json({ token });
-    } else {
-      res.status(400).send("user not found");
-    }
-  } catch (err) {
-    res.status(500).send("Internal Server Error");
-    console.error(err.message);
-  }
-}
 
-async function tokenUser(req, res) {
-  try {
-    const result = await model.findById(req.user.id);
-    return res.json({ data: [`hello ${req.user.email}`, result] });
-  } catch (err) {
-    res.status(500).send("Internal Server Error");
-    console.error(err.message);
-  }
-}
 
 async function resetPassword(req, res) {
   try {
@@ -132,28 +102,6 @@ async function resetPasswordConfirm(req, res) {
   }
 }
 
-const verifyToken = async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ message: "missing token" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  jsonwebtoken.verify(token, process.env.SECRET_KEY, async (err, decode) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid Token" });
-    }
-    console.log("decoded :", decode);
-    const user = await model.findById(decode.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "user not found" });
-    }
-
-    return res.status(200).json({ message: "Token is valid" });
-  });
-};
 
 async function sendMail(req, res) {
   try {
@@ -230,11 +178,8 @@ async function chatgpt(req, res) {
 
 export default {
   createUser,
-  authenticate,
   resetPassword,
-  tokenUser,
   resetPasswordConfirm,
-  verifyToken,
   sendMail,
   chatgpt,
 };
