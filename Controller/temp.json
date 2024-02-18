@@ -42,5 +42,16 @@
       "data": "{\"prompt\":\"how\"}"
     },
     "request": {}
+  },
+  {
+    "user created": {
+      "name": "new user",
+      "email": "newuser123@gmail.com",
+      "password": "$2a$10$gX0iNP8n3SENmyliR3S.WOXwJgXL7meJIk/kTIAiZwo6qlf2tfNZG",
+      "_id": "65d1856f7d4c7f237cb5f808",
+      "createdAt": "2024-02-18T04:19:59.391Z",
+      "updatedAt": "2024-02-18T04:19:59.391Z",
+      "__v": 0
+    }
   }
 ]

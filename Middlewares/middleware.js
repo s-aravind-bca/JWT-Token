@@ -38,7 +38,7 @@ async function authenticate(req, res) {
         }
   
         const token = utils.generateToken(user);
-        console.log(token);
+        //console.log(token);
         res.json({ token });
       } else {
         res.status(400).send("user not found");

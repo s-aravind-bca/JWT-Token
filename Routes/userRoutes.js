@@ -8,7 +8,8 @@ route.post('/reset-password',controller.resetPassword)
 route.post('/reset-password/:token',controller.resetPasswordConfirm)
 route.post('/mail',controller.sendMail)
 route.post('/chat',controller.chatgpt)
-
+route.post('/signup',controller.signup)
+route.post('/login',controller.login)
 //route.post('/auth-token',controller.authenticate) // To get jwt token
 //route.post('/verify-token',controller.verifyToken) // To verify jwt token
 

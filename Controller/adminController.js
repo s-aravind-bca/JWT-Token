@@ -1,8 +1,12 @@
 import userModel from "../Model/userModel.js";
+import adminModel from "../Model/adminModel.js";
+import utils from "../utils/utils.js";
 
 async function createUser(req, res) {
     try {
       let {name, email, password } = req.body;
+      if(email && password){
+      if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
       const user = await userModel.findOne({ email });
       if (user) {
         return res.status(400).send("email already exist");
@@ -14,6 +18,9 @@ async function createUser(req, res) {
         const result = await userModel.create({name, email, password: hashedPassword });
         return res.send("user created" );
       }
+    }else{
+      res.status(404).send("No data given")
+    }
     } catch (err) {
       console.error(err.message);
       return res.status(500).send("Internal Server Error");
@@ -46,9 +53,10 @@ async function createUser(req, res) {
   async function editUser(req,res) {
     try{
     const { id, name, email, password } = req.body
+    if(!id) return res.status(404).send("user id required to edit user")
     const user = await userModel.findById(id)
     if(name) user.name = name 
-    if(email) user.email = email
+    if(email && utils.validateEmail(email)) user.email = email
     if(password) user.password = await bcrypt.hash(password,10)
     await user.save()
     return res.send(user)
