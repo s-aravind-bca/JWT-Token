@@ -1,6 +1,6 @@
-import model from "../Model/userModel.js";
-import mail from "../Model/mailModel.js";
-import gpt from "../Model/gptModel.js";
+import userModel from "../Model/userModel.js";
+import mailModel from "../Model/mailModel.js";
+import gptModel from "../Model/gptModel.js";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import OpenAI from "openai";
@@ -8,31 +8,12 @@ import OpenAI from "openai";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY2,
 });
-async function createUser(req, res) {
-  try {
-    const { email, password } = req.body;
-    const user = await model.findOne({ email });
-    if (user) {
-      return res.status(400).send("email already exist");
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await model.create({ email, password: hashedPassword });
-      return res.send("user created" );
-    }
-  } catch (err) {
-    console.error(err.message);
-    return res.status(500).send("Internal Server Error");
-   
-  }
-}
-
-
 
 
 async function resetPassword(req, res) {
   try {
     const { email } = req.body;
-    const user = await model.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (user) {
       const token = Math.random().toString(36).slice(-8);
       console.log(token);
@@ -81,7 +62,7 @@ async function resetPasswordConfirm(req, res) {
   try {
     const { token } = req.params;
     const { password } = req.body;
-    const user = await model.findOne({
+    const user = await userModel.findOne({
       resetPasswordToken: token,
       tokenExpires: { $gt: Date.now() },
     });
@@ -124,14 +105,14 @@ async function sendMail(req, res) {
       };
       transporter.sendMail(message, async (err, info) => {
         if (err) {
-          const result = await mail.create({
+          const result = await mailModel.create({
             email: content,
             to: email,
             sent: false,
           });
           return res.status(400).send("Somthing went wrong, try again");
         }
-        const result = await mail.create({
+        const result = await mailModel.create({
           email: content,
           to: email,
           sent: true,
@@ -167,7 +148,7 @@ async function chatgpt(req, res) {
     });
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
-    await gpt.create({ "prompt":query, result: resultString, message });
+    await gptModel.create({ "prompt":query, result: resultString, message });
 
     return res.send(message);
   } catch (err) {
@@ -177,7 +158,6 @@ async function chatgpt(req, res) {
 }
 
 export default {
-  createUser,
   resetPassword,
   resetPasswordConfirm,
   sendMail,
