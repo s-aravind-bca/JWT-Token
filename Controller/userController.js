@@ -86,8 +86,7 @@ async function resetPassword(req, res) {
                 Below is your unique reset code. Please copy and paste it into the designated field on the password reset page:
                 Reset Code: ${token} 
                 This token only valid for 10 minutes
-                If you did not request this password reset, please disregard this email. Your account security is important to us, and we recommend contacting our support team immediately if you suspect any unauthorized activity.
-                
+                If you did not request this password reset, please disregard this email. Your account security is important to us, and we recommend contacting our support team immediately if you suspect any unauthorized activity.                
                 `,
       };
       transporter.sendMail(message, (err, info) => {
@@ -135,9 +134,9 @@ async function resetPasswordConfirm(req, res) {
 
 async function sendMail(req, res) {
   try {
-    const { email, content } = req.body;
+    const { email, subject, content } = req.body;
 
-    if (email && content) {
+    if (email && content && subject) {
       if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
       
       const transporter = nodemailer.createTransport({
@@ -150,7 +149,7 @@ async function sendMail(req, res) {
       const message = {
         from: process.env.MAIL_USER,
         to: email,
-        subject: "Sample Mail",
+        subject: subject,
         html: content,
       };
       transporter.sendMail(message, async (err, info) => {
