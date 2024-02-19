@@ -206,11 +206,35 @@ async function chatgpt(req, res) {
   }
 }
 
+
+async function translate(req, res) {
+  try {
+    const { from, to, text } = req.body;
+    if(!(from && to && text)) return res.status(404).send("All values required")
+
+      const query = `Translate the given text from ${from} to ${to}    
+      Text: ${text}`
+     // console.log("Query = ",query);
+    const result = await openai.chat.completions.create({
+      messages: [{ role: "user", content: query }],
+      model: "gpt-3.5-turbo",
+    });
+    const resultString = JSON.stringify(result);
+    const message = result.choices[0].message.content;
+    await gptModel.create({ "prompt":query, result: resultString, message });
+    return res.send(message);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
 export default {
   resetPassword,
   resetPasswordConfirm,
   sendMail,
   chatgpt,
   signup,
-  login
+  login,
+  translate
 };
