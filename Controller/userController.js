@@ -212,7 +212,7 @@ async function translate(req, res) {
     const { from, to, text } = req.body;
     if(!(from && to && text)) return res.status(404).send("All values required")
 
-      const query = `Translate the given text from ${from} to ${to}    
+      const query = `Translate the given text from ${from} to ${to}. Only reply the translated text.   
       Text: ${text}`
      // console.log("Query = ",query);
     const result = await openai.chat.completions.create({
