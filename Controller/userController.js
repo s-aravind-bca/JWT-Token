@@ -80,14 +80,7 @@ async function resetPassword(req, res) {
         from: process.env.MAIL_USER,
         to: user.email,
         subject: "Password reset request",
-        text: `Dear ${user.email},
-
-                We've received a request to reset the password for your account.
-                Below is your unique reset code. Please copy and paste it into the designated field on the password reset page:
-                Reset Code: ${token} 
-                This token only valid for 10 minutes
-                If you did not request this password reset, please disregard this email. Your account security is important to us, and we recommend contacting our support team immediately if you suspect any unauthorized activity.                
-                `,
+        text: `Dear ${user.email},\n\nWe've received a request to reset the password for your account.\nBelow is your unique reset code. Please copy and paste it into the designated field on the password reset page:\nReset Code: ${token} \nThis token only valid for 10 minutes\n\nIf you did not request this password reset, please disregard this email. Your account security is important to us, and we recommend contacting our support team immediately if you suspect any unauthorized activity.`,
       };
       transporter.sendMail(message, (err, info) => {
         if (err) {
