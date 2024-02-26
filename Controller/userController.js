@@ -139,6 +139,7 @@ async function sendMail(req, res) {
           pass: process.env.MAIL_PASSWORD,
         },
       });
+      //Ans
       const message = {
         from: process.env.MAIL_USER,
         to: email,
