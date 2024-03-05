@@ -13,6 +13,6 @@ route.post('/signup',controller.signup)
 route.post('/login',controller.login)
 route.post('/translate',controller.translate)
 //route.post('/auth-token',controller.authenticate) // To get jwt token
-//route.post('/verify-token',controller.verifyToken) // To verify jwt token
+route.post('/verify-token',controller.verifyToken) // To verify jwt token
 
 export default route

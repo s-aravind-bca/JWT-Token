@@ -5,6 +5,7 @@ import utils from "../utils/utils.js";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import OpenAI from "openai";
+import middleware from "../Middlewares/middleware.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY2,
@@ -246,6 +247,15 @@ async function translate(req, res) {
   }
 }
 
+async function verifyToken(req,res) {
+    const token = req.headers.authorization
+    if(!token) return res.status(404).send("Missing Token")
+    const check = await utils.verifyToken(token)
+    console.log("check",check);
+    if(check.valid) return res.send(check.message)
+    return res.status(403).send(check.message)
+}
+
 export default {
   resetPassword,
   resetPasswordConfirm,
@@ -254,5 +264,6 @@ export default {
   signup,
   login,
   translate,
-  newPassword
+  newPassword,
+  verifyToken
 };
