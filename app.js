@@ -1,9 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
-import 'dotenv/config'
-import userRoutes from './Routes/userRoutes.js'
-import cors from 'cors'
-import adminRoutes from './Routes/adminRoutes.js'
+import 'dotenv/config';
+import userRoutes from './Routes/userRoutes.js';
+import cors from 'cors';
+import adminRoutes from './Routes/adminRoutes.js';
 
 const app = express()
 app.use(express.json())
