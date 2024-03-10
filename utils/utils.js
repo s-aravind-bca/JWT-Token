@@ -9,7 +9,7 @@ const generateToken = (user) => {
         },
         process.env.SECRET_KEY,
         {
-            "expiresIn": "10m"
+            "expiresIn": "120m"
         }
     )
 }
