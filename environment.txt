@@ -4,3 +4,5 @@ MAIL_USER= "herokuusertn69@gmail.com"
 MAIL_PASSWORD = "aonkxxkvugybedaa"
 OPENAI_KEY = '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'
 OPENAI_KEY2 = '=s=k=-=1=o=E4=MW=j==72=X0=Ie=4Y=WY=B7=5T=3B=lbk==FJ==wTg=Frp=H73=0R9=4g=1qB=BY=e='
+mongodb+srv://herokuusertn69:<password>@bulk-mail-sender.8zhdxta.mongodb.net/ # Compass
+mongodb+srv://herokuusertn69:<password>@bulk-mail-sender.8zhdxta.mongodb.net/?retryWrites=true&w=majority # Node.js
