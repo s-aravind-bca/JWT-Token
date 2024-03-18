@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
 
     jsonwebtoken.verify(token, process.env.SECRET_KEY,async (err,decode)=>{
         if(err){
-            return res.status(403).send("Invalid Token")
+            return res.status(403).send("Session Expired, Login to Continue")
         }
         console.log("decoded :",decode);
         const user = await userModel.findById(decode.id)

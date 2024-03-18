@@ -152,7 +152,7 @@ async function newPassword(req, res) {
 async function sendMail(req, res) {
   try {
     const { email, subject, content } = req.body;
-
+    console.log(`Mail Request : ${req.user}`);
     if (email && content && subject) {
       if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
       

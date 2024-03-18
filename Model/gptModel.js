@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
 const gptSchema = new mongoose.Schema({
+    user:{
+        type:mongoose.Schema.Types.ObjectId
+    },
+    requestType:{
+        type:String
+    },
     prompt:{
         type:String
     },

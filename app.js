@@ -10,7 +10,6 @@ app.use(express.json())
 app.use(cors())
 app.use('/api/v1/user',userRoutes)
 app.use('/api/v1/admin',adminRoutes)
-
 const URL = process.env.MONGO_URL
 
 mongoose.connect(URL).then(()=>{
