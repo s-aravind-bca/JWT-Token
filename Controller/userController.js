@@ -154,7 +154,15 @@ async function sendMail(req, res) {
     const { email, subject, content } = req.body;
 
     if (email && content && subject) {
-      if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
+      if(Array.isArray(email)){
+        if(email.length <= 0) return res.status(400).send("No Email Specified")
+        email.map(e=>{
+          if(!(utils.validateEmail(e))) return res.status(400).send("Invalid Email Detected")
+        })
+      }
+      else{ 
+        if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
+      }
       
       const transporter = nodemailer.createTransport({
         service: "gmail",
