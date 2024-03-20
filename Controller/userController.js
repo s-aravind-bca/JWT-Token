@@ -152,13 +152,13 @@ async function newPassword(req, res) {
 async function sendMail(req, res) {
   try {
     const { email, subject, content } = req.body;
+    let receivedArray = false;
     console.log(`Mail Request : ${req.user}`);
     if (email && content && subject) {
       if(Array.isArray(email)){
         if(email.length <= 0) return res.status(400).send("No Email Specified")
-        email.map(e=>{
-          if(!(utils.validateEmail(e))) return res.status(400).send("Invalid Email Detected")
-        })
+        if(email.some(e=>!(utils.validateEmail(e)))) return res.status(400).send("Invalid Email Detected")
+        receivedArray = true
       }
       else{ 
         if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
@@ -174,13 +174,14 @@ async function sendMail(req, res) {
       //Ans
       const message = {
         from: process.env.MAIL_USER,
-        to: email,
+        to: receivedArray ? email : [email],
         subject: subject,
         html: content,
       };
       transporter.sendMail(message, async (err, info) => {
         if (err) {
           const result = await mailModel.create({
+            user: req.user.id,
             email: content,
             to: email,
             sent: false,
@@ -188,11 +189,12 @@ async function sendMail(req, res) {
           return res.status(400).send("Somthing went wrong, try again");
         }
         const result = await mailModel.create({
+          user: req.user.id,
           email: content,
           to: email,
           sent: true,
         });
-        return res.status(400).send("Email Sent");
+        return res.status(200).send("Email Sent");
       });
     } else {
       return res.status(404).send("No data given");
@@ -223,7 +225,7 @@ async function chatgpt(req, res) {
     });
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
-    await gptModel.create({ "prompt":query, result: resultString, message });
+    await gptModel.create({ "prompt":query, result: resultString, message ,user: req.user.id,requestType:"query"});
 
     return res.send(message);
   } catch (err) {
@@ -247,7 +249,7 @@ async function translate(req, res) {
     });
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
-    await gptModel.create({ "prompt":query, result: resultString, message });
+    await gptModel.create({ "prompt":query, result: resultString, message,user: req.user.id,requestType:"translate" });
     return res.send(message);
   } catch (err) {
     console.error(err.message);
