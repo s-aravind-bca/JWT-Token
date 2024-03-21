@@ -104,10 +104,13 @@ async function resetPassword(req, res) {
 async function resetPasswordConfirm(req, res) {
   try {
     const { otp } = req.params;
+    const { email } = req.body;
     const value = +otp
     console.log(value);
+    if(!(value && email)) return res.status(400).send("Invalid data");
     //const { password } = req.body;
     const user = await userModel.findOne({
+      email: email,
       resetPasswordToken: value,
       tokenExpires: { $gt: Date.now() },
     });

@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
     tokenExpires:{
         type:Number
     },
+    mails: [{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'mails'
+    }],
+    chats:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'chat'
+    }]
 
 },{
     timestamps:true

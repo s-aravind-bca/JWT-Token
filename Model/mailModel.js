@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const mailSchema = new mongoose.Schema({
     user:{
-        type:mongoose.Schema.Types.ObjectId
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
     },
     email:{
         type:String,
