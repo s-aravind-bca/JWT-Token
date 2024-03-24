@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const mailSchema = new mongoose.Schema({
     user:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'user'
+        ref:'user',
+        required: true
     },
     email:{
         type:String,
