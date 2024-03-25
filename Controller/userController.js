@@ -1,6 +1,8 @@
 import userModel from "../Model/userModel.js";
 import mailModel from "../Model/mailModel.js";
 import gptModel from "../Model/gptModel.js";
+import historyModel from "../Model/historyModel.js";
+import taskGroupModel from "../Model/taskGroupModel.js";
 import utils from "../utils/utils.js";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
@@ -260,16 +262,73 @@ async function translate(req, res) {
   }
 }
 
+
+async function createGroup(req, res) {
+  try {
+    const { name } = req.body;
+    if(!name) return res.status(404).send("Name is required")
+    const isExists = await taskGroupModel.find({groupName: name})
+    if(isExists.length > 0 ) return res.status(400).send("Taskgroup already exists")
+    await taskGroupModel.create({ user: req.user.id, groupName: name });
+    return res.send("Task Group Created Successfully");
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
+async function getGroup(req, res) {
+  try {
+    const result = await taskGroupModel.find({ user: req.user.id});
+    return res.send(result.reverse());
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
+async function getTasks(req, res) {
+  try {
+    const {id} = req.params
+    const result = await taskGroupModel.findById(id);
+    if(!result) res.status(404).send("Task Group Not Found")
+    return res.json({tasks:result.tasks.reverse(), groupName: result.groupName});
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
+async function createTask(req, res) {
+  try {
+    const { groupName, name, emails } = req.body;
+    if(!(groupName && name && emails.length > 0)) return res.status(404).send("All fields required")
+    const group = await taskGroupModel.findOne({user: req.user.id ,groupName})
+    if(!group) return res.status(404).send("Group Not Found")
+    const taskExists = group.tasks.some(task => task.name === name);
+    if(taskExists) return res.status(400).send("Task already exists")
+    group.tasks.push({name, emails})
+    await group.save()
+    return res.send("Task Created Successfully");
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
 async function verifyToken(req,res) {
     const token = req.headers.authorization
     if(!token) return res.status(404).send("Missing Token")
     const check = await utils.verifyToken(token)
-    console.log("check",check);
     if(check.valid) return res.send(check.message)
     return res.status(403).send(check.message)
 }
 
 export default {
+  getTasks,
+  getGroup,
+  createTask,
+  createGroup,
   resetPassword,
   resetPasswordConfirm,
   sendMail,

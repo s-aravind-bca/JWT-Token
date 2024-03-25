@@ -12,8 +12,7 @@ const taskGroupSchema = new mongoose.Schema({
     },
     tasks:[{
         name:{
-            type: String,
-            unique: true
+            type: String
         },
         emails:{
             type:[String]

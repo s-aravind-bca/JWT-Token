@@ -14,7 +14,6 @@ const verifyToken = (req, res, next) => {
         if(err){
             return res.status(403).send("Session Expired, Login to Continue")
         }
-        console.log("decoded :",decode);
         const user = await userModel.findById(decode.id)
 
         if(!user){
