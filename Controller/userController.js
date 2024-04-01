@@ -239,6 +239,34 @@ async function chatgpt(req, res) {
   }
 }
 
+async function aicreator(req, res) {
+  try {
+    const { prompt, tone, format, length } = req.body;
+    if(!prompt) return res.status(404).send("No prompt given")
+
+      const query = `Answer the question.
+      The response should be in HTML format.
+      The response should preserve any HTML formatting, links, and styles in the context or Add yourself required formatting.
+      The response should be in ${tone} tone and the response format should be as ${format}.your response length must be ${length} 
+      
+      Question: ${prompt}
+      `
+     // console.log("Query = ",query);
+    const result = await openai.chat.completions.create({
+      messages: [{ role: "user", content: query }],
+      model: "gpt-3.5-turbo",
+    });
+    const resultString = JSON.stringify(result);
+    const message = result.choices[0].message.content;
+    await gptModel.create({ "prompt":query, result: resultString, message ,user: req.user.id,requestType:"query"});
+
+    return res.send(message);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+}
+
 
 async function translate(req, res) {
   try {
@@ -333,6 +361,7 @@ export default {
   resetPasswordConfirm,
   sendMail,
   chatgpt,
+  aicreator,
   signup,
   login,
   translate,
