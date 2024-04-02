@@ -241,14 +241,12 @@ async function chatgpt(req, res) {
 
 async function aicreator(req, res) {
   try {
-    const { prompt, tone, format, length } = req.body;
+    const { prompt, tone, format, length, language } = req.body;
     if(!prompt) return res.status(404).send("No prompt given")
 
       const query = `Answer the question.
-      The response should be in HTML format.
-      The response should preserve any HTML formatting, links, and styles in the context or Add yourself required formatting.
-      The response should be in ${tone} tone and the response format should be as ${format}.your response length must be ${length} 
-      
+      The response should be in ${tone? tone: "suitable"} tone and the response format should be as ${format? format: "suitable format"}.your response length must be ${length? length : "suitable for the question"} 
+      The response language is ${language}.
       Question: ${prompt}
       `
      // console.log("Query = ",query);
