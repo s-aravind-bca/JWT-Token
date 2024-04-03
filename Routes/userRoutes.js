@@ -16,8 +16,13 @@ route.post('/translate',middleware.verifyToken,controller.translate)
 route.post('/taskgroup',middleware.verifyToken,controller.createGroup)
 route.get('/taskgroup',middleware.verifyToken,controller.getGroup)
 route.post('/task',middleware.verifyToken,controller.createTask)
+route.delete('/task/:id',middleware.verifyToken,controller.createTask)
 route.get('/taskgroup/:id',middleware.verifyToken,controller.getTasks)
 //route.post('/auth-token',controller.authenticate) // To get jwt token
 route.post('/verify-token',controller.verifyToken) // To verify jwt token
+//History Routes
+
+route.get('/history',middleware.verifyToken,controller.userHistory)
+route.delete('/history/:id',middleware.verifyToken,controller.deleteSingleHistory)
 
 export default route

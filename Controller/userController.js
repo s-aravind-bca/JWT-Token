@@ -43,6 +43,7 @@ async function signup(req,res){
 async function login(req,res){
   try {
     const { email, password } = req.body;
+    if(!(email && password)) return res.status(404).send("Missing values")
     const user = await userModel.findOne({ email });
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
@@ -155,19 +156,12 @@ async function newPassword(req, res) {
 
 
 async function sendMail(req, res) {
+  const { email, subject, content } = req.body;
   try {
-    const { email, subject, content } = req.body;
-    let receivedArray = false;
     console.log(`Mail Request : ${req.user}`);
     if (email && content && subject) {
-      if(Array.isArray(email)){
-        if(email.length <= 0) return res.status(400).send("No Email Specified")
-        if(email.some(e=>!(utils.validateEmail(e)))) return res.status(400).send("Invalid Email Detected")
-        receivedArray = true
-      }
-      else{ 
-        if(!(utils.validateEmail(email))) return res.status(400).send("Invalid Email")
-      }
+      if(email.length <= 0) return res.status(400).send("No Email Specified")
+      if(email.some(e=>!(utils.validateEmail(e)))) return res.status(400).send("Invalid Email Detected")
       
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -179,7 +173,7 @@ async function sendMail(req, res) {
       //Ans
       const message = {
         from: process.env.MAIL_USER,
-        to: receivedArray ? email : [email],
+        to: email,
         subject: subject,
         html: content,
       };
@@ -191,6 +185,13 @@ async function sendMail(req, res) {
             to: email,
             sent: false,
           });
+          const history = await historyModel.create({
+            user: req.user.id,
+            window: "Mail Sender",
+            action: `Sent ${email.length === 1 ? "a mail" : "Bulk Mail"} \nReceiptents: ${email.join(", ")} .`,
+            status: "Failed",
+            time: Date.now()
+          })
           return res.status(400).send("Somthing went wrong, try again");
         }
         const result = await mailModel.create({
@@ -199,20 +200,34 @@ async function sendMail(req, res) {
           to: email,
           sent: true,
         });
+        const history = await historyModel.create({
+          user: req.user.id,
+          window: "Mail Sender",
+          action: `Sent ${email.length === 1 ? "a mail" : "Bulk Mail"} \nReceiptents: ${email.join(", ")} .`,
+          status: "Success",
+          time: Date.now()
+        })
         return res.status(200).send("Email Sent");
       });
     } else {
-      return res.status(404).send("No data given");
+      return res.status(404).send("Missing Required Data");
     }
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Mail Sender",
+      action: `Try to Sent ${email.length === 1 ? "a mail" : "Bulk Mail"} \nReceiptents: ${email.join(", ")} .`,
+      status: "Failed. Internal server error accured.",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
 
 async function chatgpt(req, res) {
+  const { prompt } = req.body;
   try {
-    const { prompt } = req.body;
     if(!prompt) return res.status(404).send("No prompt given")
 
       const query = `Answer the question based on the context below or if no context, then answer based on the question.
@@ -231,17 +246,30 @@ async function chatgpt(req, res) {
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
     await gptModel.create({ "prompt":query, result: resultString, message ,user: req.user.id,requestType:"query"});
-
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Mail Sender",
+      action: `Asked "${prompt.query}" to AI and received result:\n${message}`,
+      status: "Success",
+      time: Date.now()
+    })
     return res.send(message);
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Mail Sender",
+      action: `Asked "${prompt.query}" to AI`,
+      status: "Failed. An Internal server error accured",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
 
 async function aicreator(req, res) {
+  const { prompt, tone, format, length, language } = req.body;
   try {
-    const { prompt, tone, format, length, language } = req.body;
     if(!prompt) return res.status(404).send("No prompt given")
 
       const query = `Answer the question.
@@ -257,18 +285,31 @@ async function aicreator(req, res) {
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
     await gptModel.create({ "prompt":query, result: resultString, message ,user: req.user.id,requestType:"query"});
-
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "AI Creator",
+      action: `Asked "${prompt}" to AI and received result:\n${message}`,
+      status: "Success",
+      time: Date.now()
+    })
     return res.send(message);
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "AI Creator",
+      action: `Asked "${prompt}" to AI `,
+      status: "Failed.Internal server error accured",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
 
 
 async function translate(req, res) {
+  const { from, to, text } = req.body;
   try {
-    const { from, to, text } = req.body;
     if(!(from && to && text)) return res.status(404).send("All values required")
 
       const query = `Translate the given text from ${from} to ${to}. Only reply the translated text.   
@@ -281,24 +322,52 @@ async function translate(req, res) {
     const resultString = JSON.stringify(result);
     const message = result.choices[0].message.content;
     await gptModel.create({ "prompt":query, result: resultString, message,user: req.user.id,requestType:"translate" });
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Translate",
+      action: `Translate from ${from} language to ${to} language for the text:\n${text}\n Received result:\n${message}`,
+      status: "Success",
+      time: Date.now()
+    })
     return res.send(message);
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Translate",
+      action: `Translate from ${from} language to ${to} language for the text:\n${text}`,
+      status: "Failed.Internal server error accured",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
 
 
 async function createGroup(req, res) {
-  try {
     const { name } = req.body;
+  try {
     if(!name) return res.status(404).send("Name is required")
     const isExists = await taskGroupModel.find({groupName: name})
     if(isExists.length > 0 ) return res.status(400).send("Taskgroup already exists")
     await taskGroupModel.create({ user: req.user.id, groupName: name });
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Task Groups",
+      action: `Created Task Group named "${name}"`,
+      status: "Success",
+      time: Date.now()
+    })
     return res.send("Task Group Created Successfully");
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Task Groups",
+      action: `Try to create Task Group named "${name}"`,
+      status: "Failed.Internal server error accured",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
@@ -326,8 +395,8 @@ async function getTasks(req, res) {
 }
 
 async function createTask(req, res) {
-  try {
-    const { groupName, name, emails } = req.body;
+    const { groupName, name, emails } = req.body; 
+   try {
     if(!(groupName && name && emails.length > 0)) return res.status(404).send("All fields required")
     const group = await taskGroupModel.findOne({user: req.user.id ,groupName})
     if(!group) return res.status(404).send("Group Not Found")
@@ -335,9 +404,23 @@ async function createTask(req, res) {
     if(taskExists) return res.status(400).send("Task already exists")
     group.tasks.push({name, emails})
     await group.save()
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Task Groups",
+      action: `Created Task named "${name}" under Group "${groupName} with Emails:\n${emails.join(", ")}"`,
+      status: "Success",
+      time: Date.now()
+    })
     return res.send("Task Created Successfully");
   } catch (err) {
     console.error(err.message);
+    const history = await historyModel.create({
+      user: req.user.id,
+      window: "Task Groups",
+      action: `Try to Create Task named "${name}" under Group "${groupName} with Emails:\n${emails.join(", ")}"`,
+      status: "Failed.Internal Server Error accured",
+      time: Date.now()
+    })
     return res.status(500).send("Internal Server Error");
   }
 }
@@ -348,6 +431,28 @@ async function verifyToken(req,res) {
     const check = await utils.verifyToken(token)
     if(check.valid) return res.send(check.message)
     return res.status(403).send(check.message)
+}
+async function userHistory(req,res){
+  try {
+    const history = await historyModel.find({user:req.user.id})
+    res.send(history)
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+    
+}
+
+async function deleteSingleHistory(req,res){
+  try {
+    const { id } = req.params
+    const history = await historyModel.findOneAndDelete({user:req.user.id,_id:id})
+    res.send("history deleted successfully")
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).send("Internal Server Error");
+  }
+    
 }
 
 export default {
@@ -364,5 +469,7 @@ export default {
   login,
   translate,
   newPassword,
-  verifyToken
+  verifyToken,
+  userHistory,
+  deleteSingleHistory
 };

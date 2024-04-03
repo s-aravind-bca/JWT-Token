@@ -5,7 +5,7 @@ const historySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    title:{
+    window:{
         type: String,
         required: true,
     },
@@ -13,8 +13,12 @@ const historySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    status:{
+        type:String,
+        required:true
+    },
     time:{
-        type: String,
+        type: Date,
         default: Date.now()
     }
 },
