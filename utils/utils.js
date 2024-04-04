@@ -1,5 +1,6 @@
 import jsonwebtoken from 'jsonwebtoken'
 import userModel from '../Model/userModel.js'
+import adminModel from '../Model/adminModel.js'
 
 const generateToken = (user) => {
     //console.log(user.id,"         ",user._id);
@@ -8,6 +9,18 @@ const generateToken = (user) => {
             "id": user.id
         },
         process.env.SECRET_KEY,
+        {
+            "expiresIn": "120m"
+        }
+    )
+}
+const generateAdminToken = (admin) => {
+    //console.log(admin.id,"         ",admin._id);
+    return jsonwebtoken.sign(
+        {
+            "id": admin.id
+        },
+        process.env.SECRET_KEY_ADMIN,
         {
             "expiresIn": "120m"
         }
@@ -43,10 +56,33 @@ const validateEmail = (email) => {
     return result
 }
 
+const verifyAdminToken =async (tokenString) => {
+    const token = tokenString.split(" ")[1];
+
+    const result = jsonwebtoken.verify(token, process.env.SECRET_KEY_ADMIN,async (err,decode)=>{
+        if(err){
+            if(err.name === "TokenExpiredError") return {"valid":false,"message":"Session Expired"}
+            else return {"valid":false,"message":"Invalid Access"}
+
+        }
+        const admin = await adminModel.findById(decode.id)
+
+        if(!admin){
+           return {"valid":false,"message":"admin Not Found"}
+        }
+
+        //console.log(admin);
+        return {"valid":true,"message":{"email":admin.email}}
+    })
+    return result
+}
+
 
 
 export default {
     generateToken,
     validateEmail,
-    verifyToken
+    verifyToken,
+    verifyAdminToken,
+    generateAdminToken
 }

@@ -1,5 +1,6 @@
 MONGO_URL = 'mongodb://127.0.0.1:27017/TestProject'
 SECRET_KEY = SECRETSECRETSECRET
+SECRET_KEY_ADMIN = ADMINONLY
 MAIL_USER= "herokuusertn69@gmail.com"
 MAIL_PASSWORD = "aonkxxkvugybedaa"
 OPENAI_KEY = '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'

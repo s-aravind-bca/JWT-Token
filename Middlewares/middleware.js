@@ -1,5 +1,6 @@
 import jsonwebtoken from 'jsonwebtoken'
 import userModel from '../Model/userModel.js';
+import adminModel from '../Model/adminModel.js';
 
 //To Check The JWT Token is valid or not
 const verifyToken = (req, res, next) => {
@@ -21,6 +22,29 @@ const verifyToken = (req, res, next) => {
         }
 
         req.user = user;
+        next();
+    })
+}
+
+const verifyAdminToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+       return res.status(401).send("missing token")
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    jsonwebtoken.verify(token, process.env.SECRET_KEY_ADMIN,async (err,decode)=>{
+        if(err){
+            return res.status(403).send("Session Expired, Login to Continue")
+        }
+        const admin = await adminModel.findById(decode.id)
+
+        if(!admin){
+           return res.status(404).send("admin not found")
+        }
+
+        req.admin = admin;
         next();
     })
 }
@@ -50,5 +74,6 @@ async function authenticate(req, res) {
   
 export default {
     verifyToken,
-    authenticate
+    authenticate,
+    verifyAdminToken
 }

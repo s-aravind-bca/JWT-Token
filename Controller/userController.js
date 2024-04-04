@@ -434,8 +434,8 @@ async function verifyToken(req,res) {
 }
 async function userHistory(req,res){
   try {
-    const history = await historyModel.find({user:req.user.id})
-    res.send(history)
+    const history = await historyModel.find({user:req.user.id},{_id:0,window:1,action:1,status:1,time:1})
+    res.send(history.reverse())
   } catch (err) {
     console.error(err.message);
     return res.status(500).send("Internal Server Error");
