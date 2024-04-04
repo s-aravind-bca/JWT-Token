@@ -432,6 +432,7 @@ async function verifyToken(req,res) {
     if(check.valid) return res.send(check.message)
     return res.status(403).send(check.message)
 }
+
 async function userHistory(req,res){
   try {
     const history = await historyModel.find({user:req.user.id},{_id:0,window:1,action:1,status:1,time:1})
