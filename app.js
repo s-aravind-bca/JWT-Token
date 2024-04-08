@@ -4,9 +4,11 @@ import 'dotenv/config';
 import userRoutes from './Routes/userRoutes.js';
 import cors from 'cors';
 import adminRoutes from './Routes/adminRoutes.js';
+import bodyParser from 'body-parser'
 
 const app = express()
-app.use(express.json())
+app.use(bodyParser.json({ limit: '25mb' }));
+app.use(bodyParser.urlencoded({ limit: '25mb', extended: true }));
 app.use(cors())
 app.use('/api/v1/user',userRoutes)
 app.use('/api/v1/admin',adminRoutes)
