@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import OpenAI from "openai";
 import middleware from "../Middlewares/middleware.js";
+import validateAsymmetricKey from "jsonwebtoken/lib/validateAsymmetricKey.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY2,
@@ -156,13 +157,13 @@ async function newPassword(req, res) {
 
 
 async function sendMail(req, res) {
-  const { email, subject, content } = req.body;
+  const { email, subject, content, attachments, attachName} = req.body;
   try {
     console.log(`Mail Request : ${req.user}`);
     if (email && content && subject) {
       if(email.length <= 0) return res.status(400).send("No Email Specified")
       if(email.some(e=>!(utils.validateEmail(e)))) return res.status(400).send("Invalid Email Detected")
-      
+      if(attachments) var attachment = Buffer.from(attachments,'base64')
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -177,6 +178,14 @@ async function sendMail(req, res) {
         subject: subject,
         html: content,
       };
+      if(attachment){
+        message.attachments = [
+          {
+            filename: attachName,
+            content: attachment
+          }
+        ]
+      }
       transporter.sendMail(message, async (err, info) => {
         if (err) {
           const result = await mailModel.create({
